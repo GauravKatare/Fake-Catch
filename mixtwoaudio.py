@@ -1,7 +1,27 @@
 from rev_ai import apiclient, JobStatus
 from pydub import AudioSegment
 
-def fun(file_path,sample):
+def mergetwoaudio(mylist,end):
+
+    sound1 = AudioSegment.from_wav("/home/kunal/Desktop/audio.wav")
+    sound2 = AudioSegment.from_wav("/home/kunal/Desktop/downloads.wav")
+
+    fro = 0.0
+    to = 0.0
+    mixed_sound = sound1[:0]
+    for ts in mylist:
+        to = ts[0] * 1000
+        mixed_sound = mixed_sound + sound1[fro:to] + sound2
+        fro = ts[1] * 1000
+
+    end = end * 1000
+
+    mixed_sound = mixed_sound + sound1[fro:end]
+    mixed_sound.export("/home/kunal/Desktop/combined.wav", format='wav')
+
+
+
+def changeAudio(file_path,sample):
     access_token = '02UMSGJJclAaCjsV2JhZn2cVfRiFTo4NBlQtKycPT6k5IxaGNumOSU7a33Bc-uaGXjnXKbo8y1IaVjMHOchz6ua68Lb7U'
 
     # Create client with your access token
@@ -16,21 +36,20 @@ def fun(file_path,sample):
     mylist = []
     file = client.get_transcript_json(job_id)
 
+    end_time = 0.0
+
     for i in file['monologues']:
         for j in i['elements']:
-            if j['type'] == "text" and j["value"] == sample:
-                new_tuple = (j["ts"], j["end_ts"])
-                mylist.append(new_tuple)
-    return mylist
+            if j['type'] == "text":
+                if j["value"] == sample:
+                    new_tuple = (j["ts"], j["end_ts"])
+                    mylist.append(new_tuple)
+                end_time = j["end_ts"]
 
-mylist=fun("/home/gaurav/Documents/raj.wav", "Enter the text to be replaced")
-song=AudioSegment.from_mp3("/home/gaurav/Documents/raj.wav")
-song1=AudioSegment.from_mp3("/home/gaurav/Downloads/downloads.wav")
-print(mylist)
-ten_seconds = (mylist[0][0]-1)*1000
-first_2_seconds = song[:ten_seconds]
+    print(end_time)
+    mergetwoaudio(mylist,end_time)
 
-beginning = first_2_seconds + 6
-end = song1 - 3
-without_the_middle = beginning + end
-without_the_middle.export("/home/gaurav/Downloads/combined.wav", format='wav')
+changeAudio("/home/kunal/Desktop/audio.wav", "institution")
+
+
+
