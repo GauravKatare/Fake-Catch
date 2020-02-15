@@ -26,7 +26,7 @@
 * Android.
 * Rev-Ai.
 * Machine Learning.
-### Frameworks
+### Frameworks and Tools
 * Android Studio.
 * Google colab.
 * Google Firebase.
