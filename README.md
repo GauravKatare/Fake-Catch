@@ -31,6 +31,7 @@
 * Google colab.
 * Google Firebase.
 * Pycharm.
+* Voice Cloning API from CorentinJ **https://github.com/CorentinJ/Real-Time-Voice-Cloning** 
 ### Feedback
 * If you find any bugs kindly post it.
 ### Contribute
