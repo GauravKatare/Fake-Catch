@@ -1,8 +1,12 @@
 package com.example.android.greetup;
 
+import android.animation.TypeConverter;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.graphics.Path;
+import android.media.AudioFormat;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Environment;
 import android.provider.DocumentsContract;
@@ -39,6 +43,8 @@ import java.util.List;
 import static android.os.Environment.DIRECTORY_DOWNLOADS;
 
 public class GetText extends AppCompatActivity {
+    boolean flag = false;
+    boolean flag2 = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,19 +60,20 @@ public class GetText extends AppCompatActivity {
             @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void onClick(View v) {
-                EditText e1=findViewById(R.id.text1);
-                EditText e2=findViewById(R.id.text2);
-                Uri file = Uri.fromFile(new File(value));
+                EditText e1 = findViewById(R.id.text1);
+                EditText e2 = findViewById(R.id.text2);
+                File ffile = new File(value);
+                Uri file = Uri.fromFile(ffile);
 
                 FirebaseStorage firebaseStorage = FirebaseStorage.getInstance();
                 StorageReference storageRef = firebaseStorage.getReferenceFromUrl("gs://greetup-6a2a3.appspot.com").child(name);
-                storageRef.putFile(file).addOnFailureListener(new OnFailureListener(){
-                    public void onFailure(@NonNull Exception exception){
-                        System.out.println("----------------Failed to upload file to cloud storage"+exception);
+                storageRef.putFile(file).addOnFailureListener(new OnFailureListener() {
+                    public void onFailure(@NonNull Exception exception) {
+                        System.out.println("----------------Failed to upload file to cloud storage" + exception);
                     }
-                }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>(){
+                }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                     @Override
-                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot){
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                         Toast.makeText(GetText.this,
                                 "File has been uploaded to cloud storage",
                                 Toast.LENGTH_SHORT).show();
@@ -77,21 +84,21 @@ public class GetText extends AppCompatActivity {
                     if (!root.exists()) {
                         root.mkdirs();
                     }
-                    File gpxfile = new File(root,"input.txt");
+                    File gpxfile = new File(root, "input.txt");
                     FileWriter writer = new FileWriter(gpxfile);
-                    writer.append(name+"\n");
-                    writer.append(e1.getText().toString()+'\n');
-                    writer.append(e2.getText().toString()+'\n');
+                    writer.append(name.split("\\.")[0]+"\n");
+                    writer.append(e1.getText().toString() + '\n');
+                    writer.append(e2.getText().toString() + '\n');
                     writer.flush();
                     writer.close();
-                    storageRef = firebaseStorage.getReferenceFromUrl("gs://greetup-6a2a3.appspot.com").child("input");
-                    storageRef.putFile(Uri.fromFile(gpxfile)).addOnFailureListener(new OnFailureListener(){
-                        public void onFailure(@NonNull Exception exception){
-                            System.out.println("----------------Failed to upload file to cloud storage"+exception);
+                    storageRef = firebaseStorage.getReferenceFromUrl("gs://greetup-6a2a3.appspot.com").child("input.txt");
+                    storageRef.putFile(Uri.fromFile(gpxfile)).addOnFailureListener(new OnFailureListener() {
+                        public void onFailure(@NonNull Exception exception) {
+                            System.out.println("----------------Failed to upload file to cloud storage" + exception);
                         }
-                    }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>(){
+                    }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                         @Override
-                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot){
+                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                             Toast.makeText(GetText.this,
                                     "File has been uploaded to cloud storage",
                                     Toast.LENGTH_SHORT).show();
@@ -111,19 +118,19 @@ public class GetText extends AppCompatActivity {
         b2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                EditText e1=findViewById(R.id.text1);
+                EditText e1 = findViewById(R.id.text1);
                 Uri file = Uri.fromFile(new File(value));
 
                 FirebaseStorage firebaseStorage = FirebaseStorage.getInstance();
-                StorageReference storageRef = firebaseStorage.getReferenceFromUrl("gs://greetup-6a2a3.appspot.com").child("temp");
+                StorageReference storageRef = firebaseStorage.getReferenceFromUrl("gs://greetup-6a2a3.appspot.com").child("output.wav");
 
-                storageRef.putFile(file).addOnFailureListener(new OnFailureListener(){
-                    public void onFailure(@NonNull Exception exception){
-                        System.out.println("----------------Failed to upload file to cloud storage"+exception);
+                storageRef.putFile(file).addOnFailureListener(new OnFailureListener() {
+                    public void onFailure(@NonNull Exception exception) {
+                        System.out.println("----------------Failed to upload file to cloud storage" + exception);
                     }
-                }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>(){
+                }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                     @Override
-                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot){
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                         Toast.makeText(GetText.this,
                                 "File has been uploaded to cloud storage",
                                 Toast.LENGTH_SHORT).show();
@@ -134,36 +141,70 @@ public class GetText extends AppCompatActivity {
         b3.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                downloadFile();
+                // downloadFile();
             }
         });
     }
+
+    private class DownLoad extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... strings) {
+            FirebaseStorage firebaseStorage = FirebaseStorage.getInstance();
+            StorageReference storageRef = firebaseStorage.getReferenceFromUrl("gs://greetup-6a2a3.appspot.com");
+            File fileNameOnDevice = new File(Environment.getExternalStorageDirectory() + "/" + File.separator + "test2.mp3");
+            try {
+                fileNameOnDevice.createNewFile();
+            } catch (IOException e) {
+                System.out.println("------------------------NO");
+                e.printStackTrace();
+            }
+            flag = true;
+            flag2 = false;
+            while (true) {
+                flag = true;
+                if (fileNameOnDevice.exists()) {
+                    storageRef.child("output.wav").getFile(fileNameOnDevice).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+                        @Override
+                        public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                            System.out.println("------------------Downloaded successfully");
+                            flag = false;
+                            flag2 = true;
+                        }
+                    }).addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception exception) {
+                            flag = false;
+                            System.out.println("----------------Failed to upload file to cloud storage" + exception);
+                        }
+                    });
+
+                    while (flag == true) try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    if (flag2 == true)
+                        break;
+                } else
+                    System.out.println("------------File is not available");
+            }
+            return null;
+        }
+    }
+
     private void downloadFile() {
-        FirebaseStorage firebaseStorage = FirebaseStorage.getInstance();
-        StorageReference storageRef = firebaseStorage.getReferenceFromUrl("gs://greetup-6a2a3.appspot.com").child("temp1");
-        File fileNameOnDevice = new File(Environment.getExternalStorageDirectory() + "/" + File.separator + "test.mp3");
+        DownLoad downLoad = new DownLoad();
+        downLoad.execute();
+    }
+    public static File convertMP3toWAV(File mp3){
+        File temp=null;
         try {
-            fileNameOnDevice.createNewFile();
-        } catch (IOException e)
-        {
-            System.out.println("------------------------NO");
-            e.printStackTrace();
+            temp = File.createTempFile(mp3.getName().split("\\.")[0],".wav");
+        //    temp.deleteOnExit();
+        } catch (IOException e1) {
+            e1.printStackTrace();
         }
-        if(fileNameOnDevice.exists())
-        {
-            storageRef.getFile(fileNameOnDevice).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>(){
-                @Override
-                public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
-                    Toast.makeText(GetText.this,"Downloaded",Toast.LENGTH_SHORT).show();
-                }
-            }).addOnFailureListener(new OnFailureListener(){
-                @Override
-                public void onFailure(@NonNull Exception exception){
-                    System.out.println("----------------Failed to upload file to cloud storage"+exception);
-                }
-            });
-        }
-        else
-            System.out.println("------------File is not available");
+        return temp;
     }
 }
