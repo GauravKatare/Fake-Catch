@@ -185,7 +185,31 @@ public class GetText extends AppCompatActivity {
                         e.printStackTrace();
                     }
                     if (flag2 == true)
+                    {
+                        storageRef.child("output.wav").delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void aVoid) {
+                                System.out.println("Successfully deleted");
+                            }
+                        }).addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                System.out.println("Failed to delete");
+                            }
+                        });
+                        storageRef.child("input.txt").delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void aVoid) {
+                                System.out.println("Successfully deleted");
+                            }
+                        }).addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                System.out.println("Failed to delete");
+                            }
+                        });
                         break;
+                    }
                 } else
                     System.out.println("------------File is not available");
             }

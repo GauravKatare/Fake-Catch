@@ -23,6 +23,7 @@ import com.example.android.greetup.Contacts.ContactList;
 import com.example.android.greetup.GetText;
 import com.example.android.greetup.Interfaces.ItemClickListener;
 import com.example.android.greetup.MainActivity;
+import com.example.android.greetup.MediaPlayer.AudioPlayer;
 import com.example.android.greetup.Model_Video;
 import com.example.android.greetup.R;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -103,7 +104,9 @@ public class Adapter_VideoFolder extends RecyclerView.Adapter<Adapter_VideoFolde
             title.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {
-                    audioPlayer(path.getText().toString(),title.getText().toString());
+                    Intent intent = new Intent(homePage, AudioPlayer.class);
+                    intent.putExtra("path",path.getText().toString());
+                    mctx.startActivity(intent);
                     return true;
                 }
             });
